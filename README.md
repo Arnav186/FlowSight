@@ -54,6 +54,7 @@ For frontend development, keep Flask running and start Vite in a second terminal
 
 ```powershell
 cd frontend
+npm install
 npm run dev
 ```
 
