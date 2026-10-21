@@ -1,0 +1,61 @@
+{
+  "data_note": "Simulated but realistic observations for academic use; integrate official traffic sensors for city deployment.",
+  "observations": 2400,
+  "segments": [
+    {
+      "cluster_id": 0,
+      "observations": 787,
+      "avg_speed": 36.76,
+      "avg_volume": 1580.86,
+      "avg_delay": 46.94,
+      "rainy_share": 0.37,
+      "segment_name": "Moderate Congestion"
+    },
+    {
+      "cluster_id": 1,
+      "observations": 1450,
+      "avg_speed": 56.87,
+      "avg_volume": 789.83,
+      "avg_delay": 19.7,
+      "rainy_share": 0.36,
+      "segment_name": "Free Flow"
+    },
+    {
+      "cluster_id": 2,
+      "observations": 163,
+      "avg_speed": 36.97,
+      "avg_volume": 1418.4,
+      "avg_delay": 49.07,
+      "rainy_share": 1.0,
+      "segment_name": "Severe Congestion"
+    }
+  ],
+  "linear_impacts": [
+    {
+      "feature": "hour",
+      "coefficient": 0.011
+    },
+    {
+      "feature": "traffic_volume",
+      "coefficient": 0.01
+    },
+    {
+      "feature": "average_speed_kmph",
+      "coefficient": -0.659
+    },
+    {
+      "feature": "rainfall_mm",
+      "coefficient": 1.306
+    },
+    {
+      "feature": "incidents",
+      "coefficient": 7.808
+    },
+    {
+      "feature": "road_lanes",
+      "coefficient": -3.259
+    }
+  ],
+  "linear_r2": 0.962,
+  "decision_tree_rules": "|--- average_speed_kmph <= 45.95\n|   |--- rainfall_mm <= 3.00\n|   |   |--- traffic_volume <= 1023.50\n|   |   |   |--- class: 1\n|   |   |--- traffic_volume >  1023.50\n|   |   |   |--- class: 0\n|   |--- rainfall_mm >  3.00\n|   |   |--- rainfall_mm <= 4.74\n|   |   |   |--- class: 2\n|   |   |--- rainfall_mm >  4.74\n|   |   |   |--- class: 2\n|--- average_speed_kmph >  45.95\n|   |--- incidents <= 0.50\n|   |   |--- rainfall_mm <= 4.11\n|   |   |   |--- class: 1\n|   |   |--- rainfall_mm >  4.11\n|   |   |   |--- class: 2\n|   |--- incidents >  0.50\n|   |   |--- average_speed_kmph <= 50.25\n|   |   |   |--- class: 0\n|   |   |--- average_speed_kmph >  50.25\n|   |   |   |--- class: 1\n"
+}
