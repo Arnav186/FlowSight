@@ -1,0 +1,5 @@
+model,MAE (min),RMSE (min),R2,Train time (ms),Test inference (ms)
+Linear Regression,2.69,3.424,0.9605,33.0,2.81
+KNN Regressor,2.815,3.677,0.9545,7.1,11.71
+Random Forest,2.816,3.694,0.9541,1137.8,26.81
+Decision Tree,3.379,4.462,0.933,8.8,1.17

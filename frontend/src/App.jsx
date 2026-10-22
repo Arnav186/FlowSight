@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { BarChart, Bar, Cell, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { analyzeTraffic, FIELDS, GROUPS, number, PRESETS, signed, time } from './traffic.js';
+import { analyzeTraffic, FIELDS, GROUPS, MODEL_COMPARISON, number, PRESETS, signed, time } from './traffic.js';
 
 function InputControl({ field, value, onChange }) {
   return <div className="input-control">
@@ -39,6 +39,8 @@ function App() {
   const [metric, setMetric] = useState('avg_delay');
   const [activeFactor, setActiveFactor] = useState('rainfall_mm');
   const [recordId, setRecordId] = useState(null);
+  const [activeModel, setActiveModel] = useState('Linear Regression');
+  const [comparisonMetric, setComparisonMetric] = useState('rmse');
   const sequence = useRef(0);
 
   const invalidField = FIELDS.find((field) => inputs[field.key] === '' || !Number.isFinite(inputs[field.key]) ||
@@ -88,6 +90,8 @@ function App() {
   const selectedFactor = analysis?.contributions.find((factor) => factor.feature === activeFactor);
   const factorExtent = Math.max(1, ...(analysis?.contributions.map((factor) => Math.abs(factor.minutes)) || []));
   const activeGroup = groupData.find((entry) => entry.segment_name === group);
+  const activeModelResult = MODEL_COMPARISON.find((item) => item.model === activeModel) || MODEL_COMPARISON[0];
+  const modelMetricMaximum = Math.max(...MODEL_COMPARISON.filter((item) => item[comparisonMetric] != null).map((item) => item[comparisonMetric]));
   const busy = status !== 'ready';
 
   return <div className="app-shell">
@@ -175,6 +179,27 @@ function App() {
               <div className="tree-verdict"><span className="tree-icon" aria-hidden="true">↳</span><span>Following these rules, the tree labels your situation <b style={{ color: GROUPS[analysis.tree.segment_name].color }}>{GROUPS[analysis.tree.segment_name].label.toLowerCase()}</b>.</span></div>
               <ol className="rule-path">{analysis.tree.rules.map((rule, index) => <li key={index}>{rule.text}</li>)}</ol>
               <p className="footnote">This is a simplified explanation of the groups. Its label can differ from the most common group among your similar records.</p>
+            </section>
+
+            <section className="panel model-comparison" aria-label="Model comparison">
+              <SectionTitle step="06" title="Compare the four models" algorithm="Evaluation">This tells you which model is strongest for each job. These results use the same held-out simulated test set.</SectionTitle>
+              <div className="comparison-intro"><span>How to read this</span><p>Lower RMSE means a smaller delay error. Higher R² means the model explains more variation. K-Means creates groups, so it uses different quality measures.</p></div>
+              <div className="chart-toolbar model-toolbar"><h3>Click a model or bar to inspect it</h3><div className="segmented" aria-label="Model metric">
+                <button aria-pressed={comparisonMetric === 'rmse'} onClick={() => setComparisonMetric('rmse')}>RMSE</button><button aria-pressed={comparisonMetric === 'r2'} onClick={() => setComparisonMetric('r2')}>R²</button>
+              </div></div>
+              <div className="model-table-wrap"><table className="model-table"><thead><tr><th>Model</th><th>Used for</th><th>Measured result</th><th>Strength</th></tr></thead><tbody>
+                {MODEL_COMPARISON.map((item) => <tr key={item.model} className={`${item.tone === 'best' ? 'winning-model' : ''} ${activeModel === item.model ? 'selected-model' : ''}`}>
+                  <td><button className="model-pick" aria-pressed={activeModel === item.model} onClick={() => setActiveModel(item.model)}>{item.model}{item.tone === 'best' && <small>Best overall for delay</small>}</button></td><td>{item.role}</td><td>{item.metric}</td><td><span className={`model-status ${item.tone}`}>{item.status}</span></td>
+                </tr>)}
+              </tbody></table></div>
+              <div className="model-bars" aria-label={`Interactive ${comparisonMetric === 'rmse' ? 'RMSE' : 'R squared'} comparison`}>
+                {MODEL_COMPARISON.filter((item) => item[comparisonMetric] != null).map((item) => { const value = item[comparisonMetric]; const width = comparisonMetric === 'rmse' ? value / modelMetricMaximum * 100 : value * 100; return <button key={item.model} className={`model-bar-row ${activeModel === item.model ? 'selected' : ''}`} onClick={() => setActiveModel(item.model)} aria-pressed={activeModel === item.model}>
+                  <span>{item.model}</span><span className="model-bar-track"><span className={`model-bar ${item.tone}`} style={{ width: `${width}%` }} /></span><b>{comparisonMetric === 'rmse' ? `${number(value, 3)} min` : number(value, 4)}</b>
+                </button>; })}
+              </div>
+              <div className="model-spotlight" role="status"><span aria-hidden="true">⌁</span><div><b>{activeModelResult.model} explained</b><p>{activeModelResult.explanation}</p>{activeModelResult.rmse != null ? <p className="spotlight-metric">Held-out result: RMSE {number(activeModelResult.rmse, 3)} minutes and R² {number(activeModelResult.r2, 4)}.</p> : <p className="spotlight-metric">Clustering quality: silhouette {number(activeModelResult.silhouette, 3)} and Davies-Bouldin index {number(activeModelResult.dbIndex, 3)}.</p>}</div></div>
+              <div className="model-winner"><span aria-hidden="true">★</span><div><b>Final result: Linear Regression is the best model for delay analysis in this project.</b><p>It achieved the lowest error (RMSE 3.424 minutes) and highest R² (0.9605). K-Means, KNN and the Decision Tree remain essential because they group traffic, find similar records and explain the result.</p></div></div>
+              <p className="footnote">This conclusion applies to the project’s simulated dataset. It does not claim that one model is always best for every city or traffic dataset.</p>
             </section>
           </div>}
         </div>

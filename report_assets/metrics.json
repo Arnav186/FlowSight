@@ -1,0 +1,56 @@
+{
+  "models": [
+    {
+      "model": "Linear Regression",
+      "MAE (min)": 2.69,
+      "RMSE (min)": 3.424,
+      "R2": 0.9605,
+      "Train time (ms)": 33.0,
+      "Test inference (ms)": 2.81
+    },
+    {
+      "model": "KNN Regressor",
+      "MAE (min)": 2.815,
+      "RMSE (min)": 3.677,
+      "R2": 0.9545,
+      "Train time (ms)": 7.1,
+      "Test inference (ms)": 11.71
+    },
+    {
+      "model": "Decision Tree",
+      "MAE (min)": 3.379,
+      "RMSE (min)": 4.462,
+      "R2": 0.933,
+      "Train time (ms)": 8.8,
+      "Test inference (ms)": 1.17
+    },
+    {
+      "model": "Random Forest",
+      "MAE (min)": 2.816,
+      "RMSE (min)": 3.694,
+      "R2": 0.9541,
+      "Train time (ms)": 1137.8,
+      "Test inference (ms)": 26.81
+    }
+  ],
+  "kmeans": {
+    "observations": 2400,
+    "train_records": 1800,
+    "test_records": 600,
+    "features": [
+      "hour",
+      "traffic_volume",
+      "average_speed_kmph",
+      "rainfall_mm",
+      "incidents",
+      "road_lanes"
+    ],
+    "silhouette": 0.451,
+    "davies_bouldin": 1.014,
+    "cluster_counts": {
+      "Moderate": 787,
+      "Free flow": 1450,
+      "Severe": 163
+    }
+  }
+}
