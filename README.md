@@ -1,3 +1,6 @@
+<img width="1425" height="1089" alt="dashboard-preview" src="https://github.com/user-attachments/assets/dc94c6d0-4f52-4b48-85b4-887e8cabeb99" />
+
+
 # FlowSight Traffic Pattern and Congestion Analytics
 
 An interactive React dashboard with a Flask API. Enter a traffic situation and explore similar recorded traffic. All four algorithms work together in one live analysis.
