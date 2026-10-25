@@ -71,7 +71,15 @@ def analyze(bundle, payload):
     count = payload.get("sample_size", 30)
     if isinstance(count, bool) or not isinstance(count, int) or not 5 <= count <= 100:
         raise ValueError("Choose between 5 and 100 similar records.")
+    total_lanes = payload.get('total_lanes', traffic['road_lanes'])
+    if (isinstance(total_lanes, bool) or not isinstance(total_lanes, int)
+            or not traffic['road_lanes'] <= total_lanes <= 6):
+        raise ValueError('Total lanes must be a whole number from open lanes to 6.')
     matches = find_neighbors(bundle, traffic, count)
+    baseline = {**traffic, 'road_lanes': total_lanes}
+    baseline_matches = matches if baseline == traffic else find_neighbors(bundle, baseline, count)
+    current_mean = float(matches.delay_minutes.mean())
+    baseline_mean = float(baseline_matches.delay_minutes.mean())
     groups = []
     for cluster_id, name in bundle["label_map"].items():
         group = matches[matches.segment_name == name]
@@ -100,5 +108,15 @@ def analyze(bundle, payload):
         "matches": matches.round(3).to_dict(orient="records"),
         "contributions": contributions,
         "tree": explain_tree(bundle, traffic),
+        "lane_plan": {
+            'total_lanes': total_lanes, 'open_lanes': traffic['road_lanes'],
+            'blocked_lanes': total_lanes - traffic['road_lanes'],
+            'vehicles_per_open_lane': round(traffic['traffic_volume'] / traffic['road_lanes'], 1),
+            'vehicles_per_lane_all_open': round(traffic['traffic_volume'] / total_lanes, 1),
+            'all_open_delay': round(baseline_mean, 2),
+            'current_delay': round(current_mean, 2),
+            'delay_difference': round(current_mean - baseline_mean, 2),
+            'note': 'Two sets of similar simulated records, changing only open lanes. Not a measured lane-closure effect or travel-time forecast.',
+        },
         "data_note": "All recorded examples in this demo are simulated traffic observations.",
     }

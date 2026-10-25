@@ -9,6 +9,7 @@ from flask import Flask, jsonify, request, send_from_directory
 from werkzeug.exceptions import HTTPException
 
 from analytics import analyze, find_neighbors, validate_traffic
+from map_service import nearby_roads, MapUnavailable, MapBusy
 
 ROOT = Path(__file__).resolve().parent
 BUNDLE = ROOT / "artifacts" / "traffic_analytics.joblib"
@@ -69,6 +70,18 @@ def similar():
 def health():
     bundle()
     return jsonify(status="ok", schema_version=2)
+
+
+@app.post('/api/map/roads')
+def map_roads():
+    try:
+        return jsonify(nearby_roads(request.get_json()))
+    except ValueError as error:
+        return jsonify(error=str(error)), 400
+    except MapBusy as error:
+        return jsonify(error=str(error)), 429, {'Retry-After': '2'}
+    except MapUnavailable as error:
+        return jsonify(error=str(error)), 503
 
 
 @app.get("/")
